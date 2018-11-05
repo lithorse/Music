@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Prism.Events;
 
-namespace Music.UI.Event
+namespace Music.UI.ViewModel
 {
-    public class OpenSongDetailViewEvent : PubSubEvent<int?>
+    public interface IAlbumDetailViewModel : IDetailViewModel
     {
     }
 }

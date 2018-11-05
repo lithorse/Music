@@ -22,10 +22,12 @@ namespace Music.UI.Startup
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
             builder.RegisterType<NavigationViewModel>().As<INavigationViewModel>();
-            builder.RegisterType<SongDetailViewModel>().As<ISongDetailViewModel>();
+            builder.RegisterType<SongDetailViewModel>().Keyed<IDetailViewModel>(nameof(SongDetailViewModel));
+            builder.RegisterType<AlbumDetailViewModel>().Keyed<IDetailViewModel>(nameof(AlbumDetailViewModel));
 
             builder.RegisterType<LookupDataService>().AsImplementedInterfaces();
             builder.RegisterType<SongRepository>().As<ISongRepository>();
+            builder.RegisterType<AlbumRepository>().As<IAlbumRepository>();
 
             return builder.Build();
         }

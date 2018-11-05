@@ -52,6 +52,10 @@
     <Compile Include="Migrations\201811021251051_Initial Migration.Designer.cs">
       <DependentUpon>201811021251051_Initial Migration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201811051535389_Added album.cs" />
+    <Compile Include="Migrations\201811051535389_Added album.Designer.cs">
+      <DependentUpon>201811051535389_Added album.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MusicDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,6 +73,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201811021251051_Initial Migration.resx">
       <DependentUpon>201811021251051_Initial Migration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811051535389_Added album.resx">
+      <DependentUpon>201811051535389_Added album.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

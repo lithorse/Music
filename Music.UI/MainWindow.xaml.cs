@@ -1,9 +1,10 @@
 ﻿using System.Windows;
+using MahApps.Metro.Controls;
 using Music.UI.ViewModel;
 
 namespace Music.UI
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : MetroWindow
     {
         private MainViewModel _viewModel;
 

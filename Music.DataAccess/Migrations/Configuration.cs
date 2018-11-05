@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Music.DataAccess.Migrations
 {
     using Music.Model;
@@ -12,7 +14,7 @@ namespace Music.DataAccess.Migrations
         {
             AutomaticMigrationsEnabled = false;
         }
-
+        
         protected override void Seed(Music.DataAccess.MusicDbContext context)
         {
             context.Songs.AddOrUpdate( 
@@ -22,6 +24,20 @@ namespace Music.DataAccess.Migrations
                 new Song { Name = "This Is How I Disappear" },
                 new Song { Name = "The Sharpest Lives" }
                 );
+
+            context.Albums.AddOrUpdate(
+                a => a.Title,
+                new Album
+                {
+                    Title = "The Black Parade",
+                    Songs = new List<Song>
+                    {
+                        context.Songs.Single(s => s.Name == "The End."),
+                        context.Songs.Single(s => s.Name == "Dead!"),
+                        context.Songs.Single(s => s.Name == "This Is How I Disappear"),
+                        context.Songs.Single(s => s.Name == "The Sharpest Lives")
+                    }
+                });
         }
     }
 }

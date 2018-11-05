@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-
-namespace Music.UI.ViewModel
+﻿namespace Music.UI.ViewModel
 {
-    public interface ISongDetailViewModel
+
+    public interface ISongDetailViewModel : IDetailViewModel
     {
-        Task LoadAsync(int? songId);
-        bool HasChanges { get; }
+        
     }
 }

@@ -9,7 +9,7 @@ using Music.Model;
 
 namespace Music.UI.Data.Lookups
 {
-    public class LookupDataService : ISongLookupDataService
+    public class LookupDataService : ISongLookupDataService, IAlbumLookupDataService
     {
         private Func<MusicDbContext> _contextCreator;
 
@@ -27,6 +27,19 @@ namespace Music.UI.Data.Lookups
                     Id = s.Id,
                     DisplayMember = s.Name
                 }).ToListAsync();
+            }
+        }
+
+        public async Task<IEnumerable<LookupItem>> GetAlbumLookupAsync()
+        {
+            using (var context = _contextCreator())
+            {
+                var items = await context.Albums.AsNoTracking().Select(s => new LookupItem()
+                {
+                    Id = s.Id,
+                    DisplayMember = s.Title
+                }).ToListAsync();
+                return items;
             }
         }
     }

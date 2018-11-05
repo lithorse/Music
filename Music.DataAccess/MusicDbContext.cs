@@ -17,6 +17,7 @@ namespace Music.DataAccess
         }
 
         public DbSet<Song> Songs { get; set; }
+        public DbSet<Album> Albums { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

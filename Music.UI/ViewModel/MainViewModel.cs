@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using Autofac.Features.Indexed;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Music.Model;
 using Music.UI.Data;
 using Music.UI.Event;
@@ -15,17 +18,17 @@ namespace Music.UI.ViewModel
     public class MainViewModel : ViewModelBase
     {
         private IEventAggregator _eventAggregator;
-        private Func<ISongDetailViewModel> _songDetailViewModelCreator;
-        private ISongDetailViewModel _songDetailViewModel;
+        private IIndex<string, IDetailViewModel> _detailViewModelCreator;
+        private IDetailViewModel _detailViewModel;
 
-        public MainViewModel(INavigationViewModel navigationViewModel, Func<ISongDetailViewModel> songDetailViewModelCreator, IEventAggregator eventAggregator)
+        public MainViewModel(INavigationViewModel navigationViewModel, IIndex<string, IDetailViewModel> detailViewModelCreator, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            _songDetailViewModelCreator = songDetailViewModelCreator;
-            _eventAggregator.GetEvent<OpenSongDetailViewEvent>().Subscribe(OnOpenSongDetailView);
-            _eventAggregator.GetEvent<AfterSongDeletedEvent>().Subscribe(AfterSongDeleted);
+            _detailViewModelCreator = detailViewModelCreator;
+            _eventAggregator.GetEvent<OpenDetailViewEvent>().Subscribe(OnOpenDetailView);
+            _eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
 
-            CreateNewSongCommand = new DelegateCommand(OnCreateNewSongExecute);
+            CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
 
             NavigationViewModel = navigationViewModel;
         }
@@ -35,42 +38,48 @@ namespace Music.UI.ViewModel
             await NavigationViewModel.LoadAsync();
         }
 
-        public ICommand CreateNewSongCommand { get; }
+        public ICommand CreateNewDetailCommand { get; }
 
         public INavigationViewModel NavigationViewModel { get; }
 
-        public ISongDetailViewModel SongDetailViewModel
+        public IDetailViewModel DetailViewModel
         {
-            get { return _songDetailViewModel; }
+            get { return _detailViewModel; }
             private set
             {
-                _songDetailViewModel = value; 
+                _detailViewModel = value; 
                 OnPropertyChanged();
             }
         }
 
-        private async void OnOpenSongDetailView(int? songId)
+        private async void OnOpenDetailView(OpenDetailViewEventArgs args)
         {
-            if (SongDetailViewModel != null && SongDetailViewModel.HasChanges)
+            if (DetailViewModel != null && DetailViewModel.HasChanges)
             {
-                var result = MessageBox.Show("You've made changes. Navigate away?", "Question", MessageBoxButton.OKCancel);
-                if (result == MessageBoxResult.Cancel)
+                var metroWindow = (MetroWindow)App.Current.MainWindow;
+                var result =
+                    await metroWindow.ShowMessageAsync("Navigate", "You have unsaved changes. Discard?", MessageDialogStyle.AffirmativeAndNegative);
+                if (result != MessageDialogResult.Affirmative)
                 {
                     return;
                 }
             }
-            SongDetailViewModel = _songDetailViewModelCreator();
-            await SongDetailViewModel.LoadAsync(songId);
+
+            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
+            await DetailViewModel.LoadAsync(args.Id);
         }
 
-        private void OnCreateNewSongExecute()
+        private void OnCreateNewDetailExecute(Type viewModelType)
         {
-            OnOpenSongDetailView(null);
+            OnOpenDetailView(new OpenDetailViewEventArgs
+            {
+                ViewModelName = viewModelType.Name
+            });
         }
 
-        private void AfterSongDeleted(int songId)
+        private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            SongDetailViewModel = null;
+            DetailViewModel = null;
         }
     }
 }

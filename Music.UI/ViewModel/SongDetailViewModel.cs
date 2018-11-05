@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Music.Model;
 using Music.UI.Data;
 using Music.UI.Data.Repositories;
@@ -15,25 +17,20 @@ using Prism.Events;
 
 namespace Music.UI.ViewModel
 {
-    class SongDetailViewModel : ViewModelBase, ISongDetailViewModel
+    class SongDetailViewModel : DetailViewModelBase, ISongDetailViewModel
     {
         private ISongRepository _songRepository;
-        private IEventAggregator _eventAggregator;
         private SongWrapper _song;
         private bool _hasChanges;
 
-        public SongDetailViewModel(ISongRepository songRepository, IEventAggregator eventAggregator)
+        public SongDetailViewModel(ISongRepository songRepository, IEventAggregator eventAggregator) : base(eventAggregator)
         {
             _songRepository = songRepository;
-            _eventAggregator = eventAggregator;
-
-            SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
-            DeleteCommand = new DelegateCommand(OnDeleteExecute);
         }
 
         
 
-        public async Task LoadAsync(int? songId)
+        public override async Task LoadAsync(int? songId)
         {
             var song = songId.HasValue ? await _songRepository.GetByIdAsync(songId.Value) : CreateNewSong();
 
@@ -66,38 +63,14 @@ namespace Music.UI.ViewModel
             }
         }
 
-
-        public bool HasChanges
-        {
-            get { return _hasChanges; }
-            set
-            {
-                if (_hasChanges != value)
-                {
-                    _hasChanges = value;
-                    OnPropertyChanged();
-                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-
-        public ICommand SaveCommand { get; }
-
-        public ICommand DeleteCommand { get; }
-
-        private async void OnSaveExecute()
+        protected override async void OnSaveExecute()
         {
             await _songRepository.SaveAsync();
             HasChanges = _songRepository.HasChanges();
-            _eventAggregator.GetEvent<AfterSongSavedEvent>().Publish(new AfterSongSavedEventArgs()
-            {
-                Id = Song.Id,
-                DisplayMember = Song.Name
-            });
+            RaiseDetailSavedEvent(Song.Id, Song.Name);
         }
 
-        private bool OnSaveCanExecute()
+        protected override bool OnSaveCanExecute()
         {
             return Song != null && !Song.HasErrors && HasChanges;
         }
@@ -109,16 +82,18 @@ namespace Music.UI.ViewModel
             return song;
         }
 
-        private async void OnDeleteExecute()
+        protected override async void OnDeleteExecute()
         {
-            var result = MessageBox.Show("Really delete?", "Question", MessageBoxButton.OKCancel);
-            if (result == MessageBoxResult.Cancel)
+            var metroWindow = (MetroWindow) App.Current.MainWindow;
+            var result =
+                await metroWindow.ShowMessageAsync("Delete", "Really delete?", MessageDialogStyle.AffirmativeAndNegative);
+            if (result != MessageDialogResult.Affirmative)
             {
                 return;
             }
             _songRepository.Remove(Song.Model);
             await _songRepository.SaveAsync();
-            _eventAggregator.GetEvent<AfterSongDeletedEvent>().Publish(Song.Id);
+            RaiseDetailDeletedEvent(Song.Id);
         }
     }
 }
